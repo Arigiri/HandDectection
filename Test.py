@@ -1,32 +1,30 @@
-import random
-data = [chr(i) for i  in range(ord('A'), ord('Z') + 1)]
-arr = [[0 for j in range(26) ] for i in range(26)]
+import cv2
+import numpy as np
 
-x = "REVICE"
-y = "AOBING"
-key = "XETENO"
-for row in range(len(arr)):
-    for col in range(len(arr)):
-        arr[row][col] = random.choice(data)
+# Load images
+y_true = cv2.imread('Objects/circle.png', cv2.IMREAD_GRAYSCALE)
+y_pred = y_true#cv2.imread('Objects/circle.png', cv2.IMREAD_GRAYSCALE)
 
-keyidx = 0
+# Threshold images
+y_true = cv2.threshold(y_true, 127, 1, cv2.THRESH_BINARY)[1]
+y_pred = cv2.threshold(y_pred, 127, 1, cv2.THRESH_BINARY)[1]
 
-for idx in range(len(x)):
-    if keyidx >= len(key):
-        break
-    row = x[idx]
-    col = y[idx]
+# Calculate the Dice coefficient
+intersection = np.sum(y_true * y_pred)
+y_true_sum = np.sum(y_true)
+y_pred_sum = np.sum(y_pred)
+print(y_true_sum)
+print(y_pred_sum)
+print(intersection)
+print(y_pred_sum/intersection)
+smooth = 1
+dice = (2 * intersection + smooth) / (y_true_sum + y_pred_sum + smooth)
 
-    row = ord(row) - ord('A')
-    col = ord(col) - ord('A')
-    arr[row][col] = key[keyidx]
-    keyidx += 1
-    if keyidx >= len(key):
-        break
+# Print the result
+print('Dice coefficient:', dice)
 
-
-f = open('output.txt', 'w')
-for row in arr:
-    for ele in row:
-        f.write(str(ele) + ' ')
-    f.write('\n')
+# Check if the result is close to 1
+if np.isclose(dice, 1):
+    print('The images are a perfect match.')
+else:
+    print('The images are not a perfect match.')

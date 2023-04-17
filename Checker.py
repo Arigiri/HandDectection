@@ -4,7 +4,8 @@ import numpy as np
 class Road:
     def __init__(self, obj) -> None:
         self.Image = obj
-        self.Edge = self.EdgeDetection(obj)
+        self.Edge = obj#self.EdgeDetection(obj)
+        _, self.Checking = cv2.threshold(self.Edge, 127, 255, cv2.THRESH_BINARY)
         self.points = self.GetPoints(self.Edge)
         self.threshold = 10
 
@@ -18,6 +19,7 @@ class Road:
 
     def GetPoints(self, Image):
         points = []
+        return points
         for row in range(Image.shape[0]):
             for col in range(Image.shape[1]):
                 intensity = Image[row][col]
@@ -25,29 +27,26 @@ class Road:
                     points.append((row, col))
         return np.array(points)
     
-    def MSE(self, points):
-        tempPoints = points.copy()
-        RoadPoints = np.copy(self.points)
-        while len(tempPoints) < len(RoadPoints):
-            tempPoints.append((0, 0))
-        tempPoints = np.array(tempPoints)
-        MSE = (np.sum((tempPoints - RoadPoints) ** 2) ** (1/2)) / 2
-        return MSE
-    
-    def Checker(self, points):
-        MSE = self.MSE(points)
-        print(self.points)
-        print(MSE)
+    def dice_coefficient(self):
+        y_true = cv2.imread("Edge.png", 0)
+        y_pred = cv2.imread("Hand.png", 0)
+        
+        y_true = cv2.threshold(y_true, 127, 1, cv2.THRESH_BINARY)[1]
+        y_pred = cv2.threshold(y_pred, 127, 1, cv2.THRESH_BINARY)[1]
 
+        # Calculate the Dice coefficient
+        intersection = np.sum(np.logical_and(y_true, y_pred))
+        y_true_sum = np.sum(y_true)
+        y_pred_sum = np.sum(y_pred)
+        smooth = 1e-6
+        dice = (2 * intersection + smooth) / (y_true_sum + y_pred_sum + smooth)
+        # Return the Dice coefficient
+        return dice
+    
     def PreCanvas(self):
         edge = np.uint8(self.Edge)
-        tempr = np.copy(edge)
-        tempg = np.copy(edge)
-        edge = cv2.merge((edge, tempg, tempr))
         return edge
-    
-    def CheckUsingNCC(self, canvas):
-        draw = cv2.cvtColor(canvas, cv2.COLOR_BGR2GRAY)
+
         
                 
 

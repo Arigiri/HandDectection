@@ -3,7 +3,7 @@ import mediapipe as mp
 import time
 import numpy as np
 import os, random
-from Checker import *
+from Checker import Road
  
 class handDetector():
     def __init__(self, mode=False, maxHands=1, modelC = 1, detectionCon=0.5, trackCon=0.5):
@@ -55,7 +55,7 @@ def GetObjectToShow():
     Path = "Objects/"
     files = os.listdir(Path)
     #Object = random.choice(files)
-    Object = "circle.jpg"
+    Object = "Triangle.png"
     return cv2.imread(Path + Object)
 
 def main():
@@ -66,7 +66,8 @@ def main():
     detector = handDetector()
     points = []
     Roads = Road(Object)
-    cv2.imshow("Target", Object)
+    print(Roads.Image.shape)
+    # cv2.imshow("Target", Object)
     while True:
         success, img = cap.read()
         img = cv2.flip(img, 1)
@@ -77,20 +78,24 @@ def main():
             # cv2.circle(img, lmList[6][1:], 15, color = (0, 0,255), thickness= cv2.FILLED) #This checker
             if CheckDraw(lmList):
                 points.append(lmList[8][1:])
-        #Draw Color
+        #Draw Color2
         CanvasImage = np.zeros(img.shape, dtype= np.uint8)
         RoadImage = Roads.PreCanvas()
         offsetx = 150
         offsety = 50
         CanvasImage[offsety: offsety + RoadImage.shape[0], offsetx : offsetx + RoadImage.shape[1]] = RoadImage
         NewCanvas = np.zeros(CanvasImage.shape)
-        # CanvasImage = cv2.addWeighted(CanvasImage, 1, RoadImage, 0.2, 0)
+        # CanvasImage = cv2.addWeighted(CanvasImage, 1, 
+        # RoadImage, 0.2, 0)
+        Origin = CanvasImage
+        cv2.imwrite("Edge.png", Origin)
         for ptIdx in range(len(points) - 1):
             startpoint = points[ptIdx]
             endpoint = points[ptIdx + 1]
-            cv2.line(CanvasImage, startpoint, endpoint, color=(255, 255, 255), thickness= 20)
+            cv2.line(CanvasImage, startpoint, endpoint, color=(187, 181,255), thickness= 20)
             cv2.line(NewCanvas, startpoint, endpoint, color=(255, 255, 255), thickness= 20)
-            
+        # print(NewCanvas.shape, CanvasImage.shape, img.shape)
+        cv2.imwrite("Hand.png", NewCanvas)
         img = cv2.add(img, CanvasImage)
         cTime = time.time()
         fps = 1 / (cTime - pTime)
@@ -100,15 +105,17 @@ def main():
                     (255, 0, 255), 3)
         
         #Check if go collect side
-        Roads.Checker(points)
+        
+        print(Roads.dice_coefficient())
 
         cv2.imshow("Image", img)
-        cv2.imshow("Canvas", CanvasImage)
+        cv2.imshow("Canvas", Origin)
         key = cv2.waitKey(1)
         if key == ord('q'):
             break
         if key == ord(' '):
             cv2.imwrite("Hand.png", NewCanvas)
+            cv2.imwrite("Edge.png", Origin)
         if key == ord('w'):
             points = []
         # if key == ord('e'):
