@@ -47,16 +47,42 @@ class handDetector():
  
         return lmList
 
-def CheckDraw(lmList):
+def CheckDraw(lmList, StartPoint, radius, CanStart):
     # return False
-    return lmList[8][2] < lmList[6][2]
+    return  np.linalg.norm(StartPoint - lmList[8][1:]) > radius and CanStart
+
+def CanStart(lmList, StartPoint, radius):
+    # print(np.linalg.norm(StartPoint - lmList[8][1:]) <= radius)
+    return np.linalg.norm(StartPoint - lmList[8][1:]) <= radius
 
 def GetObjectToShow():
     Path = "Objects/"
     files = os.listdir(Path)
-    #Object = random.choice(files)
-    Object = "Triangle.png"
+    Object = random.choice(files)
+    # Object = "Triangle.png"
     return cv2.imread(Path + Object)
+
+def draw_accurency(frame, dice):
+    # font
+    dice = round(dice, 3) * 100
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    
+    # org
+    org = (frame.shape[1] - 100 , 70)
+    
+    # fontScale
+    fontScale = 1
+    
+    # Red color in BGR
+    color = (0, 0, 255)
+    
+    # Line thickness of 2 px
+    thickness = 2
+    
+    # Using cv2.putText() method
+    image = cv2.putText(frame, str(dice) + '%', org, font, fontScale, 
+                    color, thickness, cv2.LINE_AA, False)
+    return image
 
 def main():
     pTime = 0
@@ -66,6 +92,11 @@ def main():
     detector = handDetector()
     points = []
     Roads = Road(Object)
+    StartPointRadius = 25
+    StartPoint = ""
+    canStart = False
+    canStop = False
+    canDraw = False
     print(Roads.Image.shape)
     # cv2.imshow("Target", Object)
     while True:
@@ -73,10 +104,20 @@ def main():
         img = cv2.flip(img, 1)
         img = detector.findHands(img, draw= True)
         lmList = detector.findPosition(img, draw= False)
-        if len(lmList) > 1:
+        # print(canStart)
+        if len(lmList) > 1 and StartPoint != "" :
+            if canStart == False and canStop == False:
+                canStart = CanStart(lmList, StartPoint, StartPointRadius)
+            elif CanStart(lmList, StartPoint, StartPointRadius) and canDraw == True:
+                canStart = False
+                canStop = True
+            
+            if canStart and CanStart(lmList, StartPoint, StartPointRadius) == False:
+                canDraw = True
+            
             cv2.circle(img, lmList[8][1:], 15, color = (187, 181,255), thickness= cv2.FILLED)
             # cv2.circle(img, lmList[6][1:], 15, color = (0, 0,255), thickness= cv2.FILLED) #This checker
-            if CheckDraw(lmList):
+            if CheckDraw(lmList, StartPoint, StartPointRadius, canStart):
                 points.append(lmList[8][1:])
         #Draw Color2
         CanvasImage = np.zeros(img.shape, dtype= np.uint8)
@@ -89,12 +130,15 @@ def main():
         # RoadImage, 0.2, 0)
         Origin = CanvasImage
         cv2.imwrite("Edge.png", Origin)
+        if StartPoint == "":
+            StartPoint = Roads.GetHighestPoint(Roads.GetPoints(Origin))
         for ptIdx in range(len(points) - 1):
             startpoint = points[ptIdx]
             endpoint = points[ptIdx + 1]
-            cv2.line(CanvasImage, startpoint, endpoint, color=(187, 181,255), thickness= 20)
-            cv2.line(NewCanvas, startpoint, endpoint, color=(255, 255, 255), thickness= 20)
-        # print(NewCanvas.shape, CanvasImage.shape, img.shape)
+            cv2.line(CanvasImage, startpoint, endpoint, color=(187, 181,255), thickness= 18)
+            cv2.line(NewCanvas, startpoint, endpoint, color=(255, 255, 255), thickness= 18)
+
+        cv2.circle(img, StartPoint, StartPointRadius, (255, 255, 0), thickness=cv2.FILLED)
         cv2.imwrite("Hand.png", NewCanvas)
         img = cv2.add(img, CanvasImage)
         cTime = time.time()
@@ -106,18 +150,20 @@ def main():
         
         #Check if go collect side
         
-        print(Roads.dice_coefficient())
+        # print(Roads.dice_coefficient())
+        draw_accurency(img, Roads.dice_coefficient())
 
         cv2.imshow("Image", img)
         cv2.imshow("Canvas", Origin)
         key = cv2.waitKey(1)
         if key == ord('q'):
             break
-        if key == ord(' '):
-            cv2.imwrite("Hand.png", NewCanvas)
-            cv2.imwrite("Edge.png", Origin)
         if key == ord('w'):
             points = []
+            canStart = False
+            canStop = False
+            canDraw = False
+            
         # if key == ord('e'):
         #     CheckMSE(Object, CanvasImage)
 

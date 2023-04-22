@@ -6,7 +6,8 @@ class Road:
         self.Image = obj
         self.Edge = obj#self.EdgeDetection(obj)
         _, self.Checking = cv2.threshold(self.Edge, 127, 255, cv2.THRESH_BINARY)
-        self.points = self.GetPoints(self.Edge)
+        # self.points = self.GetPoints(self.EdgeDetection(obj))
+        # print(self.points)
         self.threshold = 10
 
     def EdgeDetection(self, Image):
@@ -19,12 +20,14 @@ class Road:
 
     def GetPoints(self, Image):
         points = []
-        return points
+        Image = cv2.cvtColor(Image, cv2.COLOR_BGR2GRAY)
+        Image = cv2.threshold(Image, 127, 255, cv2.THRESH_BINARY)[1]
+        # cv2.imshow("Image", Image)
         for row in range(Image.shape[0]):
             for col in range(Image.shape[1]):
                 intensity = Image[row][col]
                 if intensity > 0:
-                    points.append((row, col))
+                    points.append((col, row))
         return np.array(points)
     
     def dice_coefficient(self):
@@ -46,8 +49,18 @@ class Road:
     def PreCanvas(self):
         edge = np.uint8(self.Edge)
         return edge
+    
+    def GetHighestPoint(self, points):
+        Highest = points[0]
+        for point in points:
+            if point[1] < Highest[1]:
+                Highest = point
+        return Highest
 
-        
+    def Test(self, frame, points):
+        for point in points:
+            cv2.circle(frame, point, 25, (255, 255, 0))
+        cv2.waitKey()
                 
 
 # Image = cv2.imread("Objects/circle.png")
