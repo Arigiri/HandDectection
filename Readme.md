@@ -30,7 +30,9 @@ Every time udpate the ***index finger tip point*** update, append that point to 
 ***Dice Coefficient***
 *Dice Coefficient* measures how similar a set and another set are.
 ![Dice Coefficient formula](https://github.com/Arigiri/HandDectection/blob/main/pics/dice_coffient.png)
+
 Source: [Dice Coefficient](https://www.kaggle.com/code/yerramvarun/understanding-dice-coefficient)
+
 Result
 ![Picture result](https://github.com/Arigiri/HandDectection/blob/main/pics/result.png)
 
