@@ -2,7 +2,7 @@
 
 **Introduction**
 
-This game is written on purpose of introducing the popular of A.I and Computer Vision. An filter that can draw by nose on tiktok influnce me to do this.
+This game is written on purpose of introducing the popular of A.I and Computer Vision. An filter that can draw by nose on tiktok influnced me to do this.
 
 **Purpose of the game**
 
