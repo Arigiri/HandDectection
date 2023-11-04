@@ -93,7 +93,7 @@ def main():
     points = []
     Roads = Road(Object)
     StartPointRadius = 25
-    StartPoint = ""
+    StartPoint = (0, 0)
     canStart = False
     canStop = False
     canDraw = False
@@ -105,7 +105,7 @@ def main():
         img = detector.findHands(img, draw= True)
         lmList = detector.findPosition(img, draw= False)
         # print(canStart)
-        if len(lmList) > 1 and StartPoint != "" :
+        if len(lmList) > 1 and StartPoint != (0, 0) :
             if canStart == False and canStop == False:
                 canStart = CanStart(lmList, StartPoint, StartPointRadius)
             elif CanStart(lmList, StartPoint, StartPointRadius) and canDraw == True:
